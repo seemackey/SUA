@@ -1,4 +1,4 @@
-function [corrMatrix,fanoFactors,tickLabels] = calculateSpikeCountCorrelation(spikingDataFile, trigDataFile, channelIDs, unitIDs, preTime, postTime, sampleRate,trigch)
+function [corrMatrix,fanoFactors,tickLabels] = calculateSpikeCountCorrelation(spikingDataFile, trigDataFile, channelIDs, unitIDs, preTime, postTime, sampleRate,trigch,dataType)
     % Load spiking data
     data = load(spikingDataFile);
     channelNames = fieldnames(data);
@@ -9,13 +9,22 @@ function [corrMatrix,fanoFactors,tickLabels] = calculateSpikeCountCorrelation(sp
         end
     end
 
-    % Load trigger data and filter by trigType == 1
-    trigData = load(trigDataFile);
-    trig = trigData.trig;
-    [trigType, trigTimes] = EphysExtractTrigs(trig, trigch, sampleRate);
-    filterIndex = trigType == 1;
-    trigTimesFiltered = trigTimes(filterIndex);
-    trigTimesSeconds = trigTimesFiltered / sampleRate;
+    if contains(dataType,'neuroscan') 
+        % Load trigger data
+        trigData = load(trigDataFile);
+        trig = trigData.trig;
+        [trigType, trigTimes] = EphysExtractTrigs(trig, trigch, sampleRate);
+        % Filter for trigType == 1
+        filterIndex = trigType == 1;
+        trigTimesFiltered = trigTimes(filterIndex);
+        trigTimesSeconds = trigTimesFiltered / sampleRate;
+    else % ripple system, 30 khz sampled trigs, make it match spiking file
+        load(trigDataFile,"config","triggers_std_analog_trimmed");
+        trigTimesFiltered = triggers_std_analog_trimmed;
+        
+        trigTimes_ds = round(trigTimesFiltered * (sampleRate / config.ripplefs));
+        trigTimesSeconds = trigTimes_ds/sampleRate;
+    end
 
     % Preallocate matrix to store spike counts
     numChannels = length(channelIDs);

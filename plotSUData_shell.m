@@ -1,20 +1,21 @@
 % SU analysis shell script 
 close all;
 clear;clc;
-spikingDataFile = ('C:\Users\cmackey\Documents\AttnTuning\kk046\2-kk045046013@sortedv2.mat');
-trigDataFile = ('C:\Users\cmackey\Documents\AttnTuning\kk046\2-kk045046013@trigs.mat');
-channelIDs = [9,11,12];
+spikingDataFile = ('H:\data\AV40\Peter\pt034\imported\Vsearch20kHz\cntu_pt034000025sorted.mat');
+trigDataFile = ('H:\data\AV40\Peter\pt034\imported\Vsearch20kHz\cntu_pt034000025trigs');
+channelIDs = [7,17];
 unitIDs = [1:2];
-preTime = .01; % second
-postTime = 0.05; % seconds
-sampleRate = 9000; % Hz
+preTime = .02; % second
+postTime = 0.2; % seconds
+sampleRate = 20000; % Hz
 trigch = 1; % triggers 
+dataType = 'New'; % 'neuroscan' or something else
 
 % basic plots of SUA
-plotSUData(spikingDataFile, trigDataFile, channelIDs, unitIDs, preTime, postTime, sampleRate,trigch)
+plotSUData(spikingDataFile, trigDataFile, channelIDs, unitIDs, preTime, postTime, sampleRate,trigch,dataType)
 
 % correlate SUA
-[corrMatrix,fanoFactors,tickLabels] = calculateSpikeCountCorrelation(spikingDataFile, trigDataFile, channelIDs, unitIDs, preTime, postTime, sampleRate,trigch)
+[corrMatrix,fanoFactors,tickLabels] = calculateSpikeCountCorrelation(spikingDataFile, trigDataFile, channelIDs, unitIDs, preTime, postTime, sampleRate,trigch,dataType)
 
 %% save stuff
 % New section for adjusted file naming and saving
@@ -34,10 +35,14 @@ fig1 = figure(1);
 set(fig1, 'Position', [100, 100, figureWidth, figureHeight]);
 rasterFileName = fullfile(filepath, sprintf('%s_Rasters.fig', outputBaseFileName));
 saveas(fig1, rasterFileName);
+rasterFileName = fullfile(filepath, sprintf('%s_Rasters.jpg', outputBaseFileName));
+saveas(fig1, rasterFileName);
 
 % Save Correlation Heatmap Figure
 fig3 = figure(3);
 correlationFileName = fullfile(filepath, sprintf('%s_Correlations.fig', outputBaseFileName));
+saveas(fig3, correlationFileName);
+correlationFileName = fullfile(filepath, sprintf('%s_Correlations.jpg', outputBaseFileName));
 saveas(fig3, correlationFileName);
 
 % Save Correlation Info and Fano Factors to Text File
